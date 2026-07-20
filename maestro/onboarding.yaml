@@ -1,0 +1,9 @@
+appId: com.amix.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'AMIX'
+- tapOn: 'Descubrir AMIX'
+- assertVisible: 'Tus amigas no pueden. Tú sí.'
+- tapOn: 'Continuar'
+- assertVisible: 'Un plan primero. La conversación después.'

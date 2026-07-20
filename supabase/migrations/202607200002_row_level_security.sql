@@ -1,0 +1,82 @@
+alter table public.profiles enable row level security;
+alter table public.profile_photos enable row level security;
+alter table public.interests enable row level security;
+alter table public.user_interests enable row level security;
+alter table public.identity_verifications enable row level security;
+alter table public.devices enable row level security;
+alter table public.places enable row level security;
+alter table public.place_amenities enable row level security;
+alter table public.place_amenity_reports enable row level security;
+alter table public.place_reviews enable row level security;
+alter table public.review_media enable row level security;
+alter table public.brands enable row level security;
+alter table public.brand_members enable row level security;
+alter table public.brand_verifications enable row level security;
+alter table public.events enable row level security;
+alter table public.event_applications enable row level security;
+alter table public.event_attendance enable row level security;
+alter table public.event_reviews enable row level security;
+alter table public.plans enable row level security;
+alter table public.plan_members enable row level security;
+alter table public.saved_items enable row level security;
+alter table public.conversations enable row level security;
+alter table public.conversation_members enable row level security;
+alter table public.messages enable row level security;
+alter table public.message_reports enable row level security;
+alter table public.calls enable row level security;
+alter table public.blocks enable row level security;
+alter table public.reports enable row level security;
+alter table public.moderation_actions enable row level security;
+alter table public.trusted_contacts enable row level security;
+alter table public.safety_sessions enable row level security;
+alter table public.safety_checkins enable row level security;
+alter table public.notifications enable row level security;
+alter table public.user_preferences enable row level security;
+alter table public.audit_logs enable row level security;
+
+create function public.current_profile_id() returns uuid language sql stable security definer set search_path = public as $$
+  select id from public.profiles where auth_user_id = auth.uid()
+$$;
+
+create policy "profiles are readable by authenticated users" on public.profiles for select to authenticated using (true);
+create policy "users update only own profile" on public.profiles for update to authenticated using (auth_user_id = auth.uid()) with check (auth_user_id = auth.uid());
+create policy "identity only owner" on public.identity_verifications for select to authenticated using (profile_id = public.current_profile_id());
+create policy "devices only owner" on public.devices for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "interests are readable" on public.interests for select to authenticated using (true);
+create policy "user interests are readable" on public.user_interests for select to authenticated using (true);
+create policy "users manage own interests" on public.user_interests for insert to authenticated with check (profile_id = public.current_profile_id());
+create policy "places are readable" on public.places for select to authenticated using (true);
+create policy "amenities are readable" on public.place_amenities for select to authenticated using (true);
+create policy "amenity reports are readable" on public.place_amenity_reports for select to authenticated using (status = 'published' or reporter_id = public.current_profile_id());
+create policy "verified users create amenity reports" on public.place_amenity_reports for insert to authenticated with check (reporter_id = public.current_profile_id() and exists (select 1 from public.profiles p where p.id = reporter_id and p.verified));
+create policy "published reviews are readable" on public.place_reviews for select to authenticated using (status = 'published' or author_id = public.current_profile_id());
+create policy "verified users create reviews" on public.place_reviews for insert to authenticated with check (author_id = public.current_profile_id() and exists (select 1 from public.profiles p where p.id = author_id and p.verified));
+create policy "review authors manage media" on public.review_media for all to authenticated using (exists (select 1 from public.place_reviews r where r.id = review_media.review_id and r.author_id = public.current_profile_id())) with check (exists (select 1 from public.place_reviews r where r.id = review_media.review_id and r.author_id = public.current_profile_id()));
+create policy "verified brands are readable" on public.brands for select to authenticated using (verification_status = 'verified');
+create policy "published events are readable" on public.events for select to authenticated using (status = 'published');
+create policy "brand members see own memberships" on public.brand_members for select to authenticated using (profile_id = public.current_profile_id());
+create policy "users manage own applications" on public.event_applications for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "users see own attendance" on public.event_attendance for select to authenticated using (profile_id = public.current_profile_id());
+create policy "event reviews are readable" on public.event_reviews for select to authenticated using (status = 'published' or author_id = public.current_profile_id());
+create policy "attendees create event reviews" on public.event_reviews for insert to authenticated with check (author_id = public.current_profile_id() and exists (select 1 from public.event_attendance a where a.event_id = event_reviews.event_id and a.profile_id = author_id and a.checked_in_at is not null));
+create policy "published plans are readable" on public.plans for select to authenticated using (status = 'published' or creator_id = public.current_profile_id());
+create policy "verified users create public plans" on public.plans for insert to authenticated with check (creator_id = public.current_profile_id() and exists (select 1 from public.profiles p where p.id = creator_id and p.verified));
+create policy "users manage own plan membership" on public.plan_members for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "users manage saved items" on public.saved_items for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "members see conversations" on public.conversations for select to authenticated using (exists (select 1 from public.conversation_members cm where cm.conversation_id = conversations.id and cm.profile_id = public.current_profile_id()));
+create policy "members see conversation membership" on public.conversation_members for select to authenticated using (profile_id = public.current_profile_id());
+create policy "members read conversation messages" on public.messages for select to authenticated using (exists (select 1 from public.conversation_members cm where cm.conversation_id = messages.conversation_id and cm.profile_id = public.current_profile_id()));
+create policy "members send own messages" on public.messages for insert to authenticated with check (sender_id = public.current_profile_id() and exists (select 1 from public.conversation_members cm where cm.conversation_id = messages.conversation_id and cm.profile_id = public.current_profile_id()));
+create policy "users create message reports" on public.message_reports for insert to authenticated with check (reporter_id = public.current_profile_id());
+create policy "members see call metadata" on public.calls for select to authenticated using (exists (select 1 from public.conversation_members cm where cm.conversation_id = calls.conversation_id and cm.profile_id = public.current_profile_id()));
+create policy "users manage own blocks" on public.blocks for all to authenticated using (blocker_id = public.current_profile_id()) with check (blocker_id = public.current_profile_id());
+create policy "reporters see own reports" on public.reports for select to authenticated using (reporter_id = public.current_profile_id());
+create policy "reporters create reports" on public.reports for insert to authenticated with check (reporter_id = public.current_profile_id());
+create policy "trusted contacts only owner" on public.trusted_contacts for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "safety sessions only owner" on public.safety_sessions for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "safety checkins only session owner" on public.safety_checkins for all to authenticated using (exists (select 1 from public.safety_sessions s where s.id = safety_checkins.session_id and s.profile_id = public.current_profile_id())) with check (exists (select 1 from public.safety_sessions s where s.id = safety_checkins.session_id and s.profile_id = public.current_profile_id()));
+create policy "notifications only owner" on public.notifications for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+create policy "preferences only owner" on public.user_preferences for all to authenticated using (profile_id = public.current_profile_id()) with check (profile_id = public.current_profile_id());
+
+-- No client policy is created for audit_logs, moderation_actions or raw identity data.
+-- Service-role access is reserved for trusted server functions and human moderation tooling.
