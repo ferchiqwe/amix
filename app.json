@@ -1,0 +1,103 @@
+{
+  "expo": {
+    "name": "AMIX",
+    "slug": "amix",
+    "owner": "ferchi",
+    "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bfa070ea-7341-4340-8e68-698d020b8756"
+    },
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "amix",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAF7EA",
+    "ios": {
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.amix.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "AMIX usa la cámara cuando verificas tu identidad o eliges crear contenido.",
+        "NSLocationWhenInUseUsageDescription": "AMIX usa tu ubicación aproximada cuando abres Girl Map o activas Modo Seguro.",
+        "NSMicrophoneUsageDescription": "AMIX usa el micrófono únicamente cuando inicias una llamada interna.",
+        "NSPhotoLibraryUsageDescription": "AMIX accede a tus fotos cuando decides adjuntar contenido a una reseña."
+      }
+    },
+    "android": {
+      "package": "com.amix.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF7EA",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECORD_AUDIO",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF7EA",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Permite que AMIX proteja tu sesión con Face ID."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "AMIX usa la cámara cuando tú eliges verificarte o crear contenido.",
+          "microphonePermission": "AMIX usa el micrófono durante llamadas internas o videos que tú grabas.",
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AMIX accede a tus fotos cuando tú eliges adjuntar contenido."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "AMIX usa tu ubicación temporal al abrir Girl Map o Modo Seguro."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#770523"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bfa070ea-7341-4340-8e68-698d020b8756"
+      }
+    }
+  }
+}
