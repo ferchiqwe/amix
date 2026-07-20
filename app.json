@@ -2,7 +2,14 @@
   "expo": {
     "name": "AMIX",
     "slug": "amix",
+    "owner": "ferchi",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bfa070ea-7341-4340-8e68-698d020b8756"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "amix",
@@ -86,6 +93,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bfa070ea-7341-4340-8e68-698d020b8756"
+      }
     }
   }
 }

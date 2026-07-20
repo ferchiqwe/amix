@@ -1,0 +1,22 @@
+name: AMIX pull request preview
+
+on:
+  pull_request: {}
+
+jobs:
+  publish_preview:
+    name: Publish Expo preview
+    type: update
+    environment: preview
+    params:
+      platform: ios
+      branch: ${{ github.ref_name || 'feature/amix-mvp' }}
+
+  comment_on_pr:
+    name: Share Expo preview on GitHub
+    after: [publish_preview]
+    type: github-comment
+    params:
+      message: 'AMIX is ready to review in Expo Go on iPhone or iPad.'
+      build_ids: []
+      deployment_ids: []
